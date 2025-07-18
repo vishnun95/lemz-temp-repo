@@ -1,0 +1,75 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/fashion_admin_dashboard/app/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id           String   @id @default(cuid())
+  orderNumber  String   @unique
+  productName  String
+  customerName String
+  status       String   @default("Payment Received")
+  orderDate    DateTime @default(now())
+  totalAmount  Float
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Product {
+  id           String  @id @default(cuid())
+  productCode  String  @unique
+  name         String
+  type         String // saree, churidhar, jewellery
+  images       String // JSON string of image URLs
+  stockQuantity Int
+  price        Float
+  description  String?
+  orders       Order[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  discountType  String   // flat or percentage
+  discountValue Float
+  startDate     DateTime
+  expiryDate    DateTime
+  minOrderValue Float?
+  maxUsageCount Int
+  currentUsage  Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CouponUsage {
+  id           String   @id @default(cuid())
+  couponCode   String
+  customerName String
+  orderAmount  Float
+  usedAt       DateTime @default(now())
+}
